@@ -1,0 +1,6 @@
+{
+  "appId": "com.arsh.gymcheckin",
+  "appName": "Gym check-in",
+  "webDir": "www",
+  "ios": { "contentInset": "always" }
+}

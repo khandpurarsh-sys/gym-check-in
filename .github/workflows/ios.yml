@@ -26,9 +26,11 @@ jobs:
         run: |
           P=ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'Used once when you tap check in, to confirm you are at the gym.'" $P
+      - name: Install pods
+        run: cd ios/App && pod install
       - name: Unsigned test build (simulator)
         run: |
-          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO build
       - name: Sign and upload to TestFlight
@@ -42,7 +44,7 @@ jobs:
           set -e
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$ASC_KEY_P8" > ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
-          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath $RUNNER_TEMP/App.xcarchive \
             DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Automatic \
             -allowProvisioningUpdates \

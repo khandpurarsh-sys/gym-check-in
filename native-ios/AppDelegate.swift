@@ -76,6 +76,10 @@ final class GymGeofence: NSObject, CLLocationManagerDelegate {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
         reloadAndRearm()
+        NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
+            self?.reloadAndRearm()
+        }
     }
 
     func reloadAndRearm() {
@@ -157,13 +161,16 @@ final class GymGeofence: NSObject, CLLocationManagerDelegate {
         manager.requestLocation()
         // Fallback if no fix arrives in time: use the region center.
         DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
-            guard let self = self, let checkIn = self.pendingCheckIn, let c = self.cfg else { return }
+            guard let self = self, let checkIn = self.pendingCheckIn else { return }
+            self.loadConfig()
+            guard let c = self.cfg else { self.pendingCheckIn = nil; return }
             self.pendingCheckIn = nil
             self.postEvent(checkIn: checkIn, lat: c.lat, lon: c.lon)
         }
     }
 
     private func postEvent(checkIn: Bool, lat: Double, lon: Double) {
+        loadConfig()
         guard let c = cfg else { return }
         let endpoint = checkIn ? "gym_check_in" : "gym_check_out"
         var body: [String: Any] = ["p_code": c.code]

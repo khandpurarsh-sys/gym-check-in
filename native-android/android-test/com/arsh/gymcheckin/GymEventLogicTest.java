@@ -47,6 +47,25 @@ public class GymEventLogicTest {
         assertTrue(GymEventLogic.configMatches("same", "same"));
     }
 
+    @Test public void enterCoalescedWhenExitAlreadyOccurred() {
+        assertTrue(GymEventLogic.coalescedByExit(2, NOW - 60_000L, NOW - 300_000L));
+    }
+    @Test public void enterNotCoalescedWhenExitBeforeIt() {
+        assertFalse(GymEventLogic.coalescedByExit(2, NOW - 300_000L, NOW - 60_000L));
+    }
+    @Test public void enterNotCoalescedWhenLastWasEnter() {
+        assertFalse(GymEventLogic.coalescedByExit(1, NOW - 60_000L, NOW - 120_000L));
+    }
+    @Test public void exitAllowedAgainstMatchingOpenVisit() {
+        assertTrue(GymEventLogic.exitAllowed(NOW - 3600_000L, NOW - 1000L));
+    }
+    @Test public void exitDroppedWhenNoOpenVisit() {
+        assertFalse(GymEventLogic.exitAllowed(null, NOW - 1000L));
+    }
+    @Test public void exitDroppedWhenOpenVisitIsNewer() {
+        assertFalse(GymEventLogic.exitAllowed(NOW - 60_000L, NOW - 3600_000L));
+    }
+
     @Test public void postedOkIsDone() {
         assertEquals(GymEventLogic.DONE, GymEventLogic.postOutcome(200, true, 0, 6));
     }

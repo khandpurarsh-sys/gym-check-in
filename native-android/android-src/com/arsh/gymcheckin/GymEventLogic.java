@@ -29,6 +29,20 @@ public final class GymEventLogic {
         return (now - occurredAt) > cutoff || occurredAt > now + FUTURE_SKEW_MS;
     }
 
+    /** A later EXIT already recorded for this visit: the visit completed in the past - drop the ENTER instead of posting a fake "now" visit. */
+    public static boolean coalescedByExit(int lastTransition, long lastAt, long occurredAt) {
+        return lastTransition == 2 && lastAt > occurredAt; // 2 = GEOFENCE_TRANSITION_EXIT
+    }
+
+    /**
+     * EXIT may post only against the currently open visit it belongs to:
+     * an open visit must exist and must have started no later than the EXIT occurred,
+     * so a stale EXIT can never close a newer visit.
+     */
+    public static boolean exitAllowed(Long openVisitInAtMs, long occurredAt) {
+        return openVisitInAtMs != null && openVisitInAtMs <= occurredAt;
+    }
+
     /** Event belongs to the currently armed config; else it must never post. */
     public static boolean configMatches(String currentCode, String eventCode) {
         return currentCode != null && currentCode.equals(eventCode);

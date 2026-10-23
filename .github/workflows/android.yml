@@ -59,7 +59,7 @@ jobs:
           echo "== merged manifest permissions =="
           grep -E "uses-permission" android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml
           echo "== receivers in merged manifest =="
-          grep -oE "<receiver[^>]*>" android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml
+          grep -A3 "<receiver" android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml || true
           echo "== signature verification =="
           BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
           $BT/apksigner verify --print-certs android/app/build/outputs/apk/release/app-release.apk | head -3

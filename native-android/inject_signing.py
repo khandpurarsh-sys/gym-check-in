@@ -1,12 +1,15 @@
 p = 'android/app/build.gradle'
 s = open(p).read()
 lines = [
-    "    signingConfigs {",
-    "        release {",
-    '            storeFile file(System.getenv("UPLOAD_STORE_FILE"))',
-    '            storePassword System.getenv("UPLOAD_STORE_PASSWORD")',
-    '            keyAlias System.getenv("UPLOAD_KEY_ALIAS")',
-    '            keyPassword System.getenv("UPLOAD_KEY_PASSWORD")',
+    "    def gymUploadStore = System.getenv(\"UPLOAD_STORE_FILE\")",
+    "    if (gymUploadStore != null) {",
+    "        signingConfigs {",
+    "            release {",
+    '                storeFile file(gymUploadStore)',
+    '                storePassword System.getenv("UPLOAD_STORE_PASSWORD")',
+    '                keyAlias System.getenv("UPLOAD_KEY_ALIAS")',
+    '                keyPassword System.getenv("UPLOAD_KEY_PASSWORD")',
+    "            }",
     "        }",
     "    }",
 ]
@@ -16,6 +19,6 @@ assert anchor in s, 'buildTypes anchor missing'
 head, tail = s.split(anchor, 1)
 rel = '        release {'
 assert rel in tail, 'release anchor missing'
-tail = tail.replace(rel, rel + '\n            signingConfig signingConfigs.release', 1)
+tail = tail.replace(rel, rel + '\n            if (gymUploadStore != null) { signingConfig signingConfigs.release }', 1)
 open(p, 'w').write(head + sc + anchor + tail)
-print('signing config injected')
+print('signing config injected (env-guarded)')

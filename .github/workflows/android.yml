@@ -56,8 +56,13 @@ jobs:
         run: |
           ls -la android/app/build/outputs/apk/release/
           sha256sum android/app/build/outputs/apk/release/app-release.apk
-          echo "== merged manifest permissions/receivers =="
-          grep -E "uses-permission|receiver android:name" android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml || grep -rE "uses-permission|receiver android:name" android/app/build/intermediates/merged_manifest/ 2>/dev/null | head -20
+          echo "== merged manifest permissions =="
+          grep -E "uses-permission" android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml
+          echo "== receivers in merged manifest =="
+          grep -oE "<receiver[^>]*>" android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml
+          echo "== signature verification =="
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          $BT/apksigner verify --print-certs android/app/build/outputs/apk/release/app-release.apk | head -3
       - uses: actions/upload-artifact@v4
         with:
           name: gym-check-in-android-apk

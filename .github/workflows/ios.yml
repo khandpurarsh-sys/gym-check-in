@@ -22,10 +22,13 @@ jobs:
         run: |
           npx cap add ios
           npx cap sync ios
+      - name: Custom AppDelegate with geofencing
+        run: cp native-ios/AppDelegate.swift ios/App/App/AppDelegate.swift
       - name: Location permission text
         run: |
           P=ios/App/App/Info.plist
-          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'Used once when you tap check in, to confirm you are at the gym.'" $P
+          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'Used when you tap check in, to confirm you are at the gym.'" $P
+          /usr/libexec/PlistBuddy -c "Add :NSLocationAlwaysAndWhenInUseUsageDescription string 'Used to check you in and out automatically when you arrive at or leave the gym.'" $P
       - name: Install pods
         run: cd ios/App && pod install
       - name: Unsigned test build (simulator)

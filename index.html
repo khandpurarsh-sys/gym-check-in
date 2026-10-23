@@ -11,8 +11,22 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<link rel="stylesheet" href="app.css?v=5">
+<link rel="stylesheet" href="app.css?v=6">
 </head><body><div id="root"></div>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));</script>
+<script>
+(function(){
+try{
+var stored=localStorage.getItem('gym-code.v1');
+if(!stored||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.Preferences)return;
+var code=stored.slice(1);
+fetch('https://vlbzvwmbcjxihlcgkped.supabase.co/rest/v1/rpc/gym_state',{method:'POST',headers:{apikey:'sb_publishable_WTYpx355WH8AjHrSwgTFOg_ZW0nXele','Content-Type':'application/json'},body:JSON.stringify({p_code:code})}).then(function(r){return r.json()}).then(function(j){
+if(!j.ok)return;
+if(j.role!=='mom'||!j.gym){Capacitor.Plugins.Preferences.remove({key:'gymGeofence'}).catch(function(){});return;}
+Capacitor.Plugins.Preferences.set({key:'gymGeofence',value:JSON.stringify({code:code,lat:j.gym.lat,lon:j.gym.lon,radius:j.gym.radius})}).catch(function(){});
+}).catch(function(){});
+}catch(e){}
+})();
+</script>
 </body></html>

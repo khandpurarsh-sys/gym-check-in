@@ -2,5 +2,13 @@
   "appId": "com.arsh.gymcheckin",
   "appName": "Gym check-in",
   "webDir": "www",
-  "ios": { "contentInset": "always" }
+  "ios": {
+    "contentInset": "never"
+  },
+  "backgroundColor": "#f2f0ec",
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK"
+    }
+  }
 }

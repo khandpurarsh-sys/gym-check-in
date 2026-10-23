@@ -13,69 +13,6 @@
 <link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="app.css?v=7">
 </head><body><div id="root"></div>
-<script>
-/* Apple Review demonstration mode: sample data only, zero server access.
-   Entering the member demo code or admin demo code (24 hex chars each, documented in
-   App Review notes, not family codes) on the code
-   screen runs the full app locally. Real codes pass through untouched. Entering
-   demo on a signed-in device asks first, then signs out and disables automatic
-   check-in on that device. Must load BEFORE app.js so the fetch wrap is in place
-   before any app request. */
-(function(){
-var DEMO_MOM='de20260000000000000000de',DEMO_ADMIN='ad20260000000000000000ad';
-var GYM={lat:37.334886,lon:-122.008982,radius:250}; /* sample gym (Apple Park) - demonstration data, not the real gym */
-function isDemo(c){return c===DEMO_MOM||c===DEMO_ADMIN;}
-function storedCode(){try{return localStorage.getItem('gym-code.v1');}catch(e){return null;}}
-function demoActive(){var s=storedCode();return !!s&&isDemo(s.slice(1));}
-function mkVisit(t0,h1,m1,h2,m2,d){var a=new Date(t0);a.setHours(h1,m1,0,0);var b=null;if(h2!=null){b=new Date(t0);b.setHours(h2,m2,0,0);}return{id:Math.round(a.getTime()/1000),in_at:a.toISOString(),out_at:b?b.toISOString():null,in_dist:d};}
-var day=864e5,t=Date.now();
-var visits=[mkVisit(t-day,7,5,8,2,12),mkVisit(t-2*day,7,12,8,0,9),mkVisit(t-4*day,18,40,19,35,15)];
-var openVisit=null;
-function state(code){var role=code===DEMO_ADMIN?'admin':'mom';var all=openVisit?[openVisit].concat(visits):visits;var r={ok:true,role:role,now:new Date().toISOString(),gym:{lat:GYM.lat,lon:GYM.lon,radius:GYM.radius},visits:all};if(role==='admin')r.momCode=DEMO_MOM;return r;}
-function resp(o){return Promise.resolve(new Response(JSON.stringify(o),{status:200,headers:{'Content-Type':'application/json'}}));}
-function clearFence(){try{if(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.Preferences)Capacitor.Plugins.Preferences.remove({key:'gymGeofence'}).catch(function(){});}catch(e){}}
-var of=window.fetch;
-window.fetch=function(url,opt){
-try{
-var u=typeof url==='string'?url:(url&&url.url)||'';
-if(u.indexOf('/rest/v1/rpc/gym_')<0)return of.apply(this,arguments);
-var body=opt&&opt.body?JSON.parse(opt.body):{};
-var code=body.p_code||'';
-if(!isDemo(code))return of.apply(this,arguments);
-if(u.indexOf('gym_state')>=0){
-var cur=storedCode();
-if(cur&&!isDemo(cur.slice(1))){
-if(!window.confirm('Enter Apple demo mode? This signs out the current session on this device and turns off automatic check-in here. Sample data only - no real records are read or written.'))return resp({ok:false});
-clearFence();
-}
-return resp(state(code));
-}
-if(u.indexOf('gym_check_in')>=0){
-if(code!==DEMO_MOM)return resp({ok:false,err:'role'});
-if(!openVisit){var n=new Date();openVisit={id:Math.round(n.getTime()/1000),in_at:n.toISOString(),out_at:null,in_dist:8};}
-return resp({ok:true});
-}
-if(u.indexOf('gym_check_out')>=0){
-if(code!==DEMO_MOM)return resp({ok:false,err:'role'});
-if(openVisit){openVisit.out_at=new Date().toISOString();visits=[openVisit].concat(visits);openVisit=null;}
-return resp({ok:true});
-}
-if(u.indexOf('gym_set_gym')>=0)return resp({ok:true});
-return resp({ok:false});
-}catch(e){return of.apply(this,arguments);}
-};
-/* Sample location so the distance-gated check-in is exercisable in demo. */
-try{
-if(navigator.geolocation){
-var pos=function(){return{coords:{latitude:GYM.lat,longitude:GYM.lon,accuracy:10,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:Date.now()};};
-var og=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
-navigator.geolocation.getCurrentPosition=function(ok,err,o){if(demoActive())return setTimeout(function(){ok(pos());},50);return og(ok,err,o);};
-var ow=navigator.geolocation.watchPosition.bind(navigator.geolocation);
-navigator.geolocation.watchPosition=function(ok,err,o){if(demoActive()){setTimeout(function(){ok(pos());},50);return 99;}return ow(ok,err,o);};
-}
-}catch(e){}
-})();
-</script>
 <script src="app.js?v=7"></script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));</script>
 <script>
@@ -84,7 +21,6 @@ try{
 var stored=localStorage.getItem('gym-code.v1');
 if(!stored||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.Preferences)return;
 var code=stored.slice(1);
-if(code==='de20260000000000000000de'||code==='ad20260000000000000000ad'){Capacitor.Plugins.Preferences.remove({key:'gymGeofence'}).catch(function(){});return;}
 fetch('https://vlbzvwmbcjxihlcgkped.supabase.co/rest/v1/rpc/gym_state',{method:'POST',headers:{apikey:'sb_publishable_WTYpx355WH8AjHrSwgTFOg_ZW0nXele','Content-Type':'application/json'},body:JSON.stringify({p_code:code})}).then(function(r){return r.json()}).then(function(j){
 if(!j.ok)return;
 if(j.role!=='mom'||!j.gym){Capacitor.Plugins.Preferences.remove({key:'gymGeofence'}).catch(function(){});return;}

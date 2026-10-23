@@ -50,11 +50,19 @@ m = m.replace(app_end, receivers + app_end, 1)
 open(mp, 'w').write(m)
 print('manifest patched')
 
-# play-services-location dependency
+# play-services-location + work-runtime dependencies
 gp = 'android/app/build.gradle'
 g = open(gp).read()
 dep_anchor = '    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"'
 assert dep_anchor in g, 'dependency anchor missing'
-g = g.replace(dep_anchor, dep_anchor + '\n    implementation "com.google.android.gms:play-services-location:21.3.0"', 1)
+g = g.replace(dep_anchor, dep_anchor + '\n    implementation "com.google.android.gms:play-services-location:21.3.0"\n    implementation "androidx.work:work-runtime:2.9.1"', 1)
 open(gp, 'w').write(g)
-print('dependency added')
+print('dependencies added')
+
+# unit tests
+TSRC = 'native-android/android-test/com/arsh/gymcheckin'
+TDST = 'android/app/src/test/java/com/arsh/gymcheckin'
+os.makedirs(TDST, exist_ok=True)
+for f in os.listdir(TSRC):
+    shutil.copy(os.path.join(TSRC, f), os.path.join(TDST, f))
+print('tests copied:', sorted(os.listdir(TSRC)))

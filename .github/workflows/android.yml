@@ -43,6 +43,8 @@ jobs:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
       - name: Inject release signing config
         run: python3 native-android/inject_signing.py
+      - name: Unit tests
+        run: cd android && ./gradlew :app:testDebugUnitTest --no-daemon
       - name: Build signed release APK
         run: cd android && ./gradlew assembleRelease --no-daemon
         env:

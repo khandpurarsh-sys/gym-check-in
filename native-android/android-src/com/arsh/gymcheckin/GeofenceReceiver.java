@@ -79,8 +79,8 @@ public class GeofenceReceiver extends BroadcastReceiver {
             conn.setRequestProperty("apikey", GymGeofenceManager.RPC_KEY);
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(8000);
-            conn.setReadTimeout(8000);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(body.toString().getBytes(StandardCharsets.UTF_8));
             }

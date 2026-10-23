@@ -81,6 +81,6 @@ public final class GymGeofenceManager {
 
     public static PendingIntent geofenceIntent(Context ctx) {
         Intent intent = new Intent(ctx, GeofenceReceiver.class);
-        return PendingIntent.getBroadcast(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        return PendingIntent.getBroadcast(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
     }
 }

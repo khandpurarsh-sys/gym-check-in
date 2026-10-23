@@ -1,0 +1,52 @@
+name: Android build
+on:
+  push:
+    branches: [android-app]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run prepare-www
+      - name: Generate Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: App icon
+        run: |
+          set -e
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          for entry in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            dpi="${entry%%:*}"; size="${entry##*:}"
+            convert icon-512.png -resize ${size}x${size} android/app/src/main/res/mipmap-$dpi/ic_launcher.png
+            convert icon-512.png -resize ${size}x${size} \
+              \( -size ${size}x${size} xc:none -fill white -draw "circle $((size/2)),$((size/2)) $((size/2)),1" \) \
+              -compose DstIn -composite android/app/src/main/res/mipmap-$dpi/ic_launcher_round.png
+          done
+      - name: Restore upload keystore
+        run: echo "$ANDROID_KEYSTORE_B64" | base64 -d > /tmp/upload.p12
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+      - name: Inject release signing config
+        run: python3 native-android/inject_signing.py
+      - name: Build signed release APK
+        run: cd android && ./gradlew assembleRelease --no-daemon
+        env:
+          UPLOAD_STORE_FILE: /tmp/upload.p12
+          UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: upload
+          UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: APK info
+        run: |
+          ls -la android/app/build/outputs/apk/release/
+          sha256sum android/app/build/outputs/apk/release/app-release.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gym-check-in-android-apk
+          path: android/app/build/outputs/apk/release/app-release.apk

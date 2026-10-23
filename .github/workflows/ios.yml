@@ -42,18 +42,11 @@ jobs:
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -e
-          P=ios/App/App.xcodeproj/project.pbxproj
-          /usr/bin/sed -i '' -E 's/(CODE_SIGN_IDENTITY(\[sdk=[^]]*\])? = )"[^"]*";/\1"Apple Distribution";/g' $P
-          grep -n 'CODE_SIGN_IDENTITY' $P
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$ASC_KEY_P8" > ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath $RUNNER_TEMP/App.xcarchive \
-            DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Automatic \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8 \
-            -authenticationKeyID $ASC_KEY_ID -authenticationKeyIssuerID $ASC_ISSUER_ID \
-            archive
+            CODE_SIGNING_ALLOWED=NO archive
           cat > $RUNNER_TEMP/export.plist <<PL
           <?xml version="1.0" encoding="UTF-8"?>
           <plist version="1.0"><dict>

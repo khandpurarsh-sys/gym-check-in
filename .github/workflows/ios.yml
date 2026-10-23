@@ -26,6 +26,11 @@ jobs:
         run: cp native-ios/AppDelegate.swift ios/App/App/AppDelegate.swift
       - name: App icon
         run: rm -rf ios/App/App/Assets.xcassets/AppIcon.appiconset && cp -R native-ios/AppIcon.appiconset ios/App/App/Assets.xcassets/AppIcon.appiconset
+      - name: Deployment target iOS 15
+        run: |
+          sed -i '' "s/platform :ios, '14.0'/platform :ios, '15.0'/" ios/App/Podfile
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 14.0/IPHONEOS_DEPLOYMENT_TARGET = 15.0/g' ios/App/App.xcodeproj/project.pbxproj
+          grep -c "IPHONEOS_DEPLOYMENT_TARGET = 15.0" ios/App/App.xcodeproj/project.pbxproj
       - name: Location permission text
         run: |
           P=ios/App/App/Info.plist

@@ -19,7 +19,11 @@ public class GymGeofencePlugin extends Plugin {
 
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener =
         (prefs, key) -> {
-            if (GymGeofenceManager.KEY.equals(key)) GymGeofenceManager.rearm(getContext());
+            if (!GymGeofenceManager.KEY.equals(key)) return;
+            GymGeofenceManager.rearm(getContext());
+            // Fresh install: mom pastes her code after first launch, so config appears
+            // after load(). Request permissions on this path too, not only at load().
+            if (GymGeofenceManager.config(getContext()) != null) requestMissingPermissions();
         };
 
     @Override

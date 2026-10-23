@@ -22,7 +22,7 @@ var stored=localStorage.getItem('gym-code.v1');
 if(!stored||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.Preferences)return;
 var code=stored.slice(1);
 fetch('https://vlbzvwmbcjxihlcgkped.supabase.co/rest/v1/rpc/gym_state',{method:'POST',headers:{apikey:'sb_publishable_WTYpx355WH8AjHrSwgTFOg_ZW0nXele','Content-Type':'application/json'},body:JSON.stringify({p_code:code})}).then(function(r){return r.json()}).then(function(j){
-if(!j.ok)return;
+if(!j.ok){Capacitor.Plugins.Preferences.remove({key:'gymGeofence'}).catch(function(){});return;}
 if(j.role!=='mom'||!j.gym){Capacitor.Plugins.Preferences.remove({key:'gymGeofence'}).catch(function(){});return;}
 Capacitor.Plugins.Preferences.set({key:'gymGeofence',value:JSON.stringify({code:code,lat:j.gym.lat,lon:j.gym.lon,radius:j.gym.radius})}).catch(function(){});
 }).catch(function(){});

@@ -44,7 +44,7 @@ public class GymEventWorker extends Worker {
         if (cfg == null || !GymEventLogic.configMatches(cfg.code, code)) return Result.success();
 
         // Stale replay would create false current attendance (backend timestamps server-side).
-        if (GymEventLogic.isStale(occurredAt, System.currentTimeMillis())) return Result.success();
+        if (GymEventLogic.isStale(occurredAt, System.currentTimeMillis(), checkIn)) return Result.success();
 
         Integer status = null;
         boolean ok = false;

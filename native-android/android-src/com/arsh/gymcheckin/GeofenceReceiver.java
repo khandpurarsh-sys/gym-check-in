@@ -59,7 +59,7 @@ public class GeofenceReceiver extends BroadcastReceiver {
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
             .build();
         WorkManager.getInstance(context.getApplicationContext())
-            .beginUniqueWork(CHAIN, ExistingWorkPolicy.APPEND, work)
+            .beginUniqueWork(CHAIN, ExistingWorkPolicy.APPEND_OR_REPLACE, work)
             .enqueue();
     }
 }

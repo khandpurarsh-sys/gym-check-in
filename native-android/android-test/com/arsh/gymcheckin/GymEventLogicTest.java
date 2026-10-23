@@ -20,14 +20,21 @@ public class GymEventLogicTest {
         assertFalse(GymEventLogic.isDuplicate(ENTER, NOW + 10_000, ENTER, NOW));
     }
 
-    @Test public void staleEventDropped() {
-        assertTrue(GymEventLogic.isStale(NOW - 16 * 60_000L, NOW));
+    @Test public void staleEnterDropped() {
+        assertTrue(GymEventLogic.isStale(NOW - 16 * 60_000L, NOW, true));
     }
-    @Test public void freshEventKept() {
-        assertFalse(GymEventLogic.isStale(NOW - 60_000L, NOW));
+    @Test public void freshEnterKept() {
+        assertFalse(GymEventLogic.isStale(NOW - 60_000L, NOW, true));
+    }
+    @Test public void recentExitKeptPastEnterCutoff() {
+        assertFalse(GymEventLogic.isStale(NOW - 60 * 60_000L, NOW, false));
+    }
+    @Test public void veryStaleExitDropped() {
+        assertTrue(GymEventLogic.isStale(NOW - 13 * 3600_000L, NOW, false));
     }
     @Test public void futureEventDropped() {
-        assertTrue(GymEventLogic.isStale(NOW + 120_000L, NOW));
+        assertTrue(GymEventLogic.isStale(NOW + 120_000L, NOW, true));
+        assertTrue(GymEventLogic.isStale(NOW + 120_000L, NOW, false));
     }
 
     @Test public void logoutDropsEvent() {

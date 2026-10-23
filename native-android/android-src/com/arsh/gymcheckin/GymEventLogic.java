@@ -5,7 +5,8 @@ public final class GymEventLogic {
     private GymEventLogic() {}
 
     public static final long DEDUP_WINDOW_MS = 180_000L;
-    public static final long STALE_CUTOFF_MS = 15 * 60_000L;
+    public static final long ENTER_STALE_CUTOFF_MS = 15 * 60_000L;
+    public static final long EXIT_STALE_CUTOFF_MS = 12 * 3600_000L;
     public static final long FUTURE_SKEW_MS = 60_000L;
     public static final int MAX_ATTEMPTS = 6;
 
@@ -18,11 +19,14 @@ public final class GymEventLogic {
     }
 
     /**
-     * The backend timestamps server-side, so a stale event replayed now would create
-     * false current attendance. Drop events older than the cutoff or from the future.
+     * The backend timestamps server-side, so a stale ENTER replayed now would create
+     * false current attendance - drop it fast. A late EXIT only stretches the end of a
+     * real open visit instead of fabricating one, so its cutoff is much longer.
+     * Events dated in the future are always dropped.
      */
-    public static boolean isStale(long occurredAt, long now) {
-        return (now - occurredAt) > STALE_CUTOFF_MS || occurredAt > now + FUTURE_SKEW_MS;
+    public static boolean isStale(long occurredAt, long now, boolean checkIn) {
+        long cutoff = checkIn ? ENTER_STALE_CUTOFF_MS : EXIT_STALE_CUTOFF_MS;
+        return (now - occurredAt) > cutoff || occurredAt > now + FUTURE_SKEW_MS;
     }
 
     /** Event belongs to the currently armed config; else it must never post. */

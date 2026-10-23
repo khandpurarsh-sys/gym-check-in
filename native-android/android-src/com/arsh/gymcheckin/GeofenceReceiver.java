@@ -41,15 +41,17 @@ public class GeofenceReceiver extends BroadcastReceiver {
         if (GymEventLogic.isDuplicate(lastT, lastAt, transition, now)) return;
         p.edit().putInt("gymGeofenceLastT", transition).putLong("gymGeofenceLastAt", now).apply();
 
-        double lat = cfg.lat, lon = cfg.lon;
+        double lat = cfg.lat, lon = cfg.lon, acc = 0.0;
         if (event.getTriggeringLocation() != null) {
             lat = event.getTriggeringLocation().getLatitude();
             lon = event.getTriggeringLocation().getLongitude();
+            if (event.getTriggeringLocation().hasAccuracy()) acc = event.getTriggeringLocation().getAccuracy();
         }
         Data data = new Data.Builder()
             .putInt("transition", transition)
             .putDouble("lat", lat)
             .putDouble("lon", lon)
+            .putDouble("acc", acc)
             .putLong("occurredAt", now)
             .putString("code", cfg.code)
             .build();

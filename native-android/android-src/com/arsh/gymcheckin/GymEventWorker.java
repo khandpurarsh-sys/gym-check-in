@@ -35,6 +35,7 @@ public class GymEventWorker extends Worker {
         int transition = d.getInt("transition", -1);
         double lat = d.getDouble("lat", Double.NaN);
         double lon = d.getDouble("lon", Double.NaN);
+        double acc = d.getDouble("acc", 0.0);
         long occurredAt = d.getLong("occurredAt", 0L);
         String code = d.getString("code");
         boolean checkIn = transition == com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_ENTER;
@@ -51,7 +52,7 @@ public class GymEventWorker extends Worker {
         try {
             JSONObject body = new JSONObject();
             body.put("p_code", cfg.code);
-            if (checkIn) { body.put("p_lat", lat); body.put("p_lon", lon); }
+            if (checkIn) { body.put("p_lat", lat); body.put("p_lon", lon); body.put("p_acc", acc); }
             String endpoint = checkIn ? "gym_check_in" : "gym_check_out";
             HttpURLConnection conn = (HttpURLConnection) new URL(GymGeofenceManager.RPC_BASE + endpoint).openConnection();
             conn.setRequestMethod("POST");

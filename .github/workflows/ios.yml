@@ -7,7 +7,7 @@ on:
         type: boolean
         default: false
   push:
-    branches: [ios-app]
+    branches: [ios-app, ios-duo-scene]
 
 jobs:
   build:
@@ -41,7 +41,7 @@ jobs:
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO build
       - name: Sign and upload to TestFlight
-        if: ${{ inputs.sign_and_upload }}
+        if: ${{ inputs.sign_and_upload || github.ref_name == 'ios-duo-scene' }}
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}

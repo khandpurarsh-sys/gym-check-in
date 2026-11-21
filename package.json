@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "capacitor:sync:after": "python3 native-ios/add-scene.py",
     "prepare-www": "rm -rf www && mkdir www && cp index.html app.js app.css manifest.webmanifest icon-180.png icon-192.png icon-512.png www/"
   },
   "dependencies": {

@@ -3,22 +3,24 @@ import Capacitor
 import CoreLocation
 import UserNotifications
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?
+    // Scene lifecycle (iOS 27 SDK requires it): the window belongs to the scene.
+    var window: UIWindow? {
+        get { UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.windows.first }.first }
+        set { }
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         GymGeofence.shared.start()
         return true
     }
 
-    func applicationDidEnterBackground(_ application: UIApplication) {
-        GymGeofence.shared.reloadAndRearm()
-    }
-
-    func applicationWillEnterForeground(_ application: UIApplication) {
-        GymGeofence.shared.reloadAndRearm()
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let c = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        c.delegateClass = SceneDelegate.self
+        return c
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -44,6 +46,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+    }
+}
+
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        // Window and Capacitor bridge view controller come from the storyboard
+        // named by UISceneStoryboardFile in Info.plist.
+        for c in connectionOptions.urlContexts {
+            _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: c.url, options: [:])
+        }
+    }
+
+    func sceneDidEnterBackground(_ scene: UIScene) { GymGeofence.shared.reloadAndRearm() }
+    func sceneWillEnterForeground(_ scene: UIScene) { GymGeofence.shared.reloadAndRearm() }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        for c in URLContexts {
+            _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: c.url, options: [:])
+        }
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, continue: userActivity, restorationHandler: { _ in })
     }
 }
 
